@@ -23,6 +23,7 @@ Mission_DataSoluTech/
 
 ## 2. Prérequis rapides
 
+```text
 - Python 3.11+ et Docker / Docker Compose installés sur votre machine
 - Avoir lu les ressources NoSQL (MongoDB, scalabilité, sharding, CRUD)
 - Dataset CSV : `healthcare_dataset.csv` présent à la racine du projet
@@ -43,7 +44,9 @@ Mission_DataSoluTech/
 
 ## 4. Lancer avec Docker
 
-```bash
+```text
+
+```bashs
 docker compose up --build
 
 L'application `app` lancera la migration automatiquement.  
@@ -52,6 +55,7 @@ Le dashboard **mongo-express** est accessible sur : [http://localhost:8081](http
 ---
 
 ## 5. Variables Docker
+
 
 | Variable | Description |
 | :--- | :--- |
@@ -64,11 +68,15 @@ Le dashboard **mongo-express** est accessible sur : [http://localhost:8081](http
 
 ## 6. Tests et qualité
 
+```text
+
 Lancer les tests unitaires : 
 ```bash
 pytest tests/
 
 ### 6.1 Vérification manuelle (Shell)
+
+```text
 
 Pour vérifier les données directement dans la base, connectez-vous au shell MongoDB :
 ```bash
@@ -76,6 +84,8 @@ docker exec -it mongodb mongosh -u admin -p admin
 
 
 ## 7. Opérations CRUD
+
+```text
 
 Le projet implémente les opérations fondamentales pour la gestion des dossiers patients, permettant une manipulation flexible des données :
 
@@ -87,6 +97,8 @@ Le projet implémente les opérations fondamentales pour la gestion des dossiers
 ---
 
 ## 8. Ajout d'un nouvel utilisateur MongoDB
+
+```text
 
 Pour sécuriser l'accès et permettre une évaluation externe, vous pouvez créer un utilisateur avec des droits spécifiques sur la base de données :
 
@@ -103,6 +115,8 @@ docker exec -it mongodb mongosh -u Evaluateur -p Evaluateurpass --authentication
 
 ## 10. Déploiement AWS (Perspectives)
 
+```text
+
 Le projet est conçu pour être facilement porté sur l'infrastructure **Amazon Web Services (AWS)** afin de garantir une haute disponibilité et une scalabilité accrue :
 
 * **Amazon S3** : Utilisé pour le stockage sécurisé et durable des fichiers sources CSV et des sauvegardes (backups).
@@ -113,6 +127,8 @@ Le projet est conçu pour être facilement porté sur l'infrastructure **Amazon 
 ---
 
 ## 11. Licence
+
+```text
 
 Projet 5 Cherif Dorra réalisé dans le cadre de la **Mission DataSoluTech** — Migration NoSQL sécurisée.  
 © 2026 — Tous droits réservés.
