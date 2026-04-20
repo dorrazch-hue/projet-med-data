@@ -71,7 +71,6 @@ docker logs -f migration-app
 ## 6. Tests et Preuves de fonctionnement
 
 Pour garantir la fiabilité de la migration, une batterie de tests a été réalisée :
-```
 
 ### 6.1 Tableau des tests
 
@@ -81,17 +80,19 @@ Pour garantir la fiabilité de la migration, une batterie de tests a été réal
 | **Validation des types** | S'assurer que les dates sont des objets `Date` (ISODate). | **Réussi** |
 | **Isolation réseau** | Vérifier que MongoDB n'est pas accessible hors du réseau Docker. | **Réussi** |
 | **Performance** | Mesurer le temps d'insertion avec la méthode `insert_many`. | **Réussi (< 30s)** |
-```
+
 
 ### 6.2 Preuves visuelles (Logs)
+```
 La réussite est confirmée par la sortie console du script :
 ```text
+```
 [INFO] Connexion à MongoDB réussie.
 [INFO] Chargement du dataset : 55 500 lignes détectées.
 [INFO] Migration terminée avec succès en 24.5 secondes.
 [INFO] Indexation terminée sur les champs : Name, Doctor, Hospital.
 ---
-```
+
 ## 7. Optimisations et Performance
 
 Pour répondre aux exigences de scalabilité de la **Mission DataSoluTech**, les choix techniques suivants ont été implémentés :
