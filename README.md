@@ -83,10 +83,10 @@ Pour garantir la fiabilité de la migration, une batterie de tests a été réal
 
 
 ### 6.2 Preuves visuelles (Logs)
-```
+
 La réussite est confirmée par la sortie console du script :
 ```text
-```
+
 [INFO] Connexion à MongoDB réussie.
 [INFO] Chargement du dataset : 55 500 lignes détectées.
 [INFO] Migration terminée avec succès en 24.5 secondes.
