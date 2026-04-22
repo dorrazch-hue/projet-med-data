@@ -66,7 +66,6 @@ docker ps
 docker stats
 docker logs -f migration-app
 ```
-
 ---
 
 ## 6. Tests et Preuves de fonctionnement
@@ -93,7 +92,6 @@ La réussite est confirmée par la sortie console du script :
 [INFO] Migration terminée avec succès en 24.5 secondes.
 [INFO] Indexation terminée sur les champs : Name, Doctor, Hospital.
 ```
-
 ---
 
 ## 7. Optimisations et Performance
