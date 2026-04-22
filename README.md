@@ -12,8 +12,8 @@ L'architecture repose sur une approche **conteneurisée** pour garantir l'isolem
 * **Moteur de base de données** : MongoDB 7.0 (NoSQL Orienté Document) choisi pour sa flexibilité de schéma et sa scalabilité horizontale (sharding).
 * **Orchestration** : Docker Compose gérant trois services :
     1.  `mongodb` : Le serveur de base de données.
-    2.  `mongo-express` : Interface GUI pour l'administration et la visualisation.
-    3.  `migration-app` : Script Python (PyMongo) effectuant le processus ETL (Extract, Transform, Load).
+  
+    2.  `migration-app` : Script Python (PyMongo) effectuant le processus ETL (Extract, Transform, Load).
 
 ---
 
@@ -22,7 +22,7 @@ L'architecture repose sur une approche **conteneurisée** pour garantir l'isolem
 Pour protéger les données de santé sensibles, les choix suivants ont été implémentés :
 
 * **Authentification forte** : Accès à la base de données protégé par login/password via variables d'environnement.
-* **Isolation réseau** : Seul le service `mongo-express` est exposé sur le port 8081. Le serveur MongoDB reste confiné dans le réseau interne Docker.
+* **Isolation réseau** : Le serveur MongoDB reste confiné dans le réseau interne Docker. Seul le service migration-app interagit avec lui, limitant ainsi la surface d'exposition aux attaques externes.
 * **Gestion des droits** : Création d'un utilisateur "Evaluateur" avec des droits `readWrite` limités à la base `healthcare_db`.
 * **Validation des données** : Le script de migration vérifie la cohérence des types (dates, entiers) pour éviter l'injection de données corrompues.
 
@@ -93,15 +93,13 @@ La réussite est confirmée par la sortie console du script :
 [INFO] Indexation terminée sur les champs : Name, Doctor, Hospital.
 ```
 ---
-
 ## 7. Optimisations et Performance
 
-Pour répondre aux exigences de scalabilité de la **Mission DataSoluTech**, les choix techniques suivants ont été implémentés :
+Pour répondre aux exigences de la **Mission DataSoluTech**, les choix techniques suivants ont été implémentés :
 
-* **Bulk Operations (Insertion par lots)** : L'utilisation de la méthode `insert_many` avec des paquets (*chunks*) de 5 000 documents réduit drastiquement les appels réseau et la charge CPU du serveur.
-* **Gestion efficiente de la RAM** : Le script utilise les itérateurs de la bibliothèque `pandas` pour lire le fichier CSV par morceaux, permettant de traiter des millions de lignes sans saturer la mémoire vive.
-* **Indexation stratégique** : Des index ont été créés sur les champs de recherche fréquents (`Name`, `Doctor`) pour assurer une réponse quasi instantanée des requêtes, même en cas de forte augmentation du volume de données.
-
+* **Traitement des données avec Pandas** : Utilisation de la bibliothèque `pandas` pour charger et préparer efficacement le dataset de 55 500 lignes.
+* **Indexation stratégique** : Des index ont été créés sur les champs de recherche fréquents (`Name`, `Doctor`) pour assurer une réponse rapide des requêtes, même en cas d'augmentation du volume de données.
+* **Automatisation via Docker** : L'utilisation de conteneurs permet de garantir des performances constantes quel que soit l'environnement de déploiement.
 ---
 
 ## **8. Stratégie de Maintenance et Sauvegarde (Backup)**
