@@ -58,7 +58,7 @@ Pour assurer la continuité de service (PRA) :
 ### Déploiement local
 ```bash
 docker compose up -d --build
-
+```
 ### Surveillance (Monitoring)
 Pour vérifier l'état de santé du service et les ressources consommées :
 ```bash
