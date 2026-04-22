@@ -116,7 +116,7 @@ docker exec mongodb mongodump --db healthcare_db --out /data/backup/
 **2. Restauration des données (Restore) :**
 
 ```bash
-docker exec mongodb mongorestore --db medical_db /data/backup/healthcare_db
+docker exec mongodb mongorestore --db healthcare_db /data/backup/healthcare_db
 ```
 
 **3. Mises à jour :**
