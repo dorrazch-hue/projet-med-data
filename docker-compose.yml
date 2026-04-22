@@ -3,11 +3,15 @@ services:
     image: mongo:7.0
     container_name: mongodb
     environment:
+      # Identifiants Root (Admin)
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      # Variables transmises au script init-db.js
+      DATABASE_NAME: ${DATABASE_NAME}
+      MONGO_APP_USER: ${MONGO_APP_USER}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
     volumes:
       - mongodb_data:/data/db
-      # On vérifie bien que ton dossier s'appelle mongo-init avec un "o"
       - ./mongo-init/init-db.js:/docker-entrypoint-initdb.d/init-db.js:ro
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
@@ -21,12 +25,11 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
-    # --- AJOUT ICI POUR LE CSV ---
     volumes:
+      # Permet au script Python d'accéder au fichier CSV sur ton Mac
       - ./healthcare_dataset.csv:/app/healthcare_dataset.csv
-    # -----------------------------
     environment:
-      # On ajoute les variables manquantes pour que init-db.js fonctionne (voir Point 3 plus tard)
+      # Variables utilisées par le script Python pour la connexion
       DATABASE_NAME: ${DATABASE_NAME}
       MONGO_APP_USER: ${MONGO_APP_USER}
       MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}

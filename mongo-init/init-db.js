@@ -1,11 +1,14 @@
-// On bascule sur la base de données médicale
-db = db.getSiblingDB('medical_db');
+// On récupère les informations "en direct" depuis Docker
+var dbName = process.env.DATABASE_NAME;
+var appUser = process.env.MONGO_APP_USER;
+var appPass = process.env.MONGO_APP_PASSWORD;
 
-// On crée l'utilisateur "employé" avec des droits limités
+// On se connecte à la base de données
+db = db.getSiblingDB(dbName);
+
+// On crée l'utilisateur avec les infos reçues
 db.createUser({
-  user: "medical_app",
-  pwd: "medical_app_password",
-  roles: [
-    { role: "readWrite", db: "medical_db" }
-  ]
+  user: appUser,
+  pwd: appPass,
+  roles: [{ role: "readWrite", db: dbName }],
 });
