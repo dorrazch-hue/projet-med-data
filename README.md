@@ -65,6 +65,7 @@ Pour vérifier l'état de santé du service et les ressources consommées :
 docker ps
 docker stats
 docker logs -f migration-app
+
 ```
 ---
 
