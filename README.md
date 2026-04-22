@@ -23,7 +23,7 @@ Pour protéger les données de santé sensibles, les choix suivants ont été im
 
 * **Authentification forte** : Accès à la base de données protégé par login/password via variables d'environnement.
 * **Isolation réseau** : Seul le service `mongo-express` est exposé sur le port 8081. Le serveur MongoDB reste confiné dans le réseau interne Docker.
-* **Gestion des droits** : Création d'un utilisateur "Evaluateur" avec des droits `readWrite` limités à la base `medical_db`.
+* **Gestion des droits** : Création d'un utilisateur "Evaluateur" avec des droits `readWrite` limités à la base `healthcare_db`.
 * **Validation des données** : Le script de migration vérifie la cohérence des types (dates, entiers) pour éviter l'injection de données corrompues.
 
 ---
@@ -44,11 +44,11 @@ Pour assurer la continuité de service (PRA) :
 
 * **Sauvegarde (Dump)** :
     ```bash
-    docker exec mongodb mongodump --db medical_db --out /data/backup/
+    docker exec mongodb mongodump --db healthcare_db --out /data/backup/
     ```
 * **Restauration (Restore)** :
     ```bash
-    docker exec mongodb mongorestore --db medical_db /data/backup/medical_db
+    docker exec mongodb mongorestore --db healthcare_db /data/backup/healthcare_db
     ```
 
 ---
@@ -110,13 +110,13 @@ Pour garantir la pérennité et la sécurité des données médicales, une proc�
 
 **1. Sauvegarde à chaud (Backup) :**
 ```bash
-docker exec mongodb mongodump --db medical_db --out /data/backup/
+docker exec mongodb mongodump --db healthcare_db --out /data/backup/
 ```
 
 **2. Restauration des données (Restore) :**
 
 ```bash
-docker exec mongodb mongorestore --db medical_db /data/backup/medical_db
+docker exec mongodb mongorestore --db medical_db /data/backup/healthcare_db
 ```
 
 **3. Mises à jour :**
