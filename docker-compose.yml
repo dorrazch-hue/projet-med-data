@@ -7,8 +7,8 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
     volumes:
       - mongodb_data:/data/db
+      # On vérifie bien que ton dossier s'appelle mongo-init avec un "o"
       - ./mongo-init/init-db.js:/docker-entrypoint-initdb.d/init-db.js:ro
-    # --- AJOUT DU HEALTHCHECK ---
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
@@ -18,11 +18,18 @@ services:
   app:
     build: .
     container_name: migration-app
-    # --- MISE À JOUR DU DEPENDS_ON ---
     depends_on:
       mongodb:
         condition: service_healthy
+    # --- AJOUT ICI POUR LE CSV ---
+    volumes:
+      - ./healthcare_dataset.csv:/app/healthcare_dataset.csv
+    # -----------------------------
     environment:
+      # On ajoute les variables manquantes pour que init-db.js fonctionne (voir Point 3 plus tard)
+      DATABASE_NAME: ${DATABASE_NAME}
+      MONGO_APP_USER: ${MONGO_APP_USER}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD}
       MONGODB_URI: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongodb:27017/${DATABASE_NAME}
 
 volumes:
