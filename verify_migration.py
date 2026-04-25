@@ -1,21 +1,27 @@
 import os
 import pandas as pd
+import sys
 from pymongo import MongoClient
 
 try:
-    # 1. Utilisation de l'URI sécurisée (Variable d'environnement)
-    uri = os.getenv("MONGODB_URI", "mongodb://admin:admin@mongodb:27017/")
-    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+    print("--- 🔍 VÉRIFICATION DES DONNÉES SÉCURISÉE ---")
+
+    # 1. Utilisation de l'URI sécurisée (Variable d'environnement obligatoire)
+    uri = os.getenv("MONGODB_URI")
     
+    if not uri:
+        print("❌ ERREUR CRITIQUE : La variable d'environnement MONGODB_URI est manquante.")
+        print("Sécurité : L'utilisation d'identifiants par défaut (admin:admin) est interdite.")
+        sys.exit(1)
+
+    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
     db = client.get_database()
     collection = db['patients']
-
-    print("--- 🔍 VÉRIFICATION DES DONNÉES ---")
 
     # 2. On compte les entrées dans MongoDB
     total_mongo = collection.count_documents({})
     
-    # 3. On compte les lignes du fichier CSV pour comparer dynamiquement
+    # 3. On compte les lignes du fichier CSV
     df = pd.read_csv('healthcare_dataset.csv')
     total_csv = len(df)
 
@@ -35,3 +41,4 @@ try:
 
 except Exception as e:
     print(f"❌ ERREUR LORS DU TEST : {e}")
+    sys.exit(1)
