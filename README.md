@@ -1,83 +1,62 @@
-# 🏥 Mission DataSoluTech : Migration NoSQL
+# Mission DataSoluTech : Pipeline de Migration NoSQL
 
-Ce projet assure la migration sécurisée et optimisée de 55 500 dossiers patients vers MongoDB.
-
----
-
-## 1. Installation et Lancement
-### Pré-requis
-* Docker & Docker Compose
-* Un fichier `.env` à la racine contenant :
-  ```text
-  MONGODB_URI=mongodb://utilisateur:password@mongodb:27017/healthcare_db
-  ```
-
-### Commandes
-```bash
-docker compose up -d --build
-```
+Ce projet présente une solution industrielle pour la migration, le nettoyage et la sécurisation de 55 500 dossiers médicaux vers une infrastructure NoSQL.
 
 ---
 
-## 2. Architecture & Environnement
-* **Stack Technique** : Python 3.11-slim, MongoDB 7.0.
-* **Gestion des dépendances** : Les versions sont strictement définies dans `requirements.txt` pour garantir la stabilité de l'environnement.
-* **Conteneurisation** : Le Dockerfile est optimisé pour une installation automatisée et reproductible des bibliothèques nécessaires.
+## Architecture et Stack
+L'application est entièrement conteneurisée pour garantir une portabilité totale.
+* **Moteur de traitement** : Python 3.11-slim (optimisé pour le poids de l'image).
+* **Base de données** : MongoDB 7.0 avec indexation de performance.
+* **Gestion des flux** : Traitement par batchs (Chunks) pour minimiser l'empreinte RAM.
 
 ---
 
-## 3. Sécurité et Confidentialité
-* **Gestion des secrets** : Aucune donnée d'authentification n'est stockée en dur dans le code.
-* **Validation de connexion** : Le script intègre une vérification de la variable `MONGODB_URI` et s'interrompt en cas de configuration manquante.
-* **Isolation** : La base de données MongoDB est isolée au sein du réseau interne Docker.
+## Securite et Robustesse
+* **Zero Secrets** : Utilisation exclusive de variables d'environnement (.env).
+* **Fail-Fast** : Le système s'interrompt immédiatement si la configuration est corrompue.
+* **Tests Automatises** : Validation de la logique de nettoyage via Pytest.
 
 ---
 
-## 4. Traitement des Données et Schéma
-### Nettoyage des données
-* Suppression des doublons (basée sur l'unicité Nom/Âge).
-* Sélection exclusive des colonnes médicales pertinentes.
-* Normalisation des chaînes de caractères.
-
-### Structure des Documents (JSON)
-Chaque patient est stocké selon le modèle suivant :
+## Strategie de Donnees (Data Quality)
+### Modele Document (JSON)
 ```json
 {
   "_id": "ObjectId",
-  "Name": "String",
+  "Name": "String (Sanitized)",
   "Age": "Integer",
   "Gender": "String",
   "Blood Type": "String",
   "Medical Condition": "String"
 }
 ```
+### Nettoyage Intelligent
+1. **Dedoublonnage** : Suppression des entrees redondantes sur le couple Nom/Age.
+2. **Casting** : Conversion forcee des types (ex: ages invalides convertis en 0).
+3. **Normalisation** : Suppression des espaces inutiles (Stripping).
 
 ---
 
-## 5. Validation du Processus
-| Test | Objectif | État |
-| :--- | :--- | :--- |
-| **Sécurité** | Blocage si configuration absente | ✅ Réussi |
-| **Intégrité** | Correspondance des volumes CSV/MongoDB | ✅ Réussi |
-| **Qualité** | Absence de doublons en base | ✅ Réussi |
+## Deploiement et Cloud (AWS)
+Le projet est conçu pour être deploye sur Amazon Web Services :
+* **Base de donnees** : Amazon DocumentDB.
+* **Supervision** : AWS CloudWatch pour le monitoring des performances.
+* **Continuite** : AWS Backup pour une retention de 30 jours.
+* **FinOps** : Budget maîtrise (<15$/mois) avec alertes de seuil.
+
+---
+
+## Lancement Rapide
+1. **Configuration** : Creer un fichier .env (voir .env.example).
+2. **Build et Start** :
+    ```bash
+    docker compose up -d --build
+    ```
+3. **Verification** :
+    ```bash
+    python3 -m pytest test_migration.py
+    ```
 
 ---
 *Dossier Technique - Dorra - 2026*
-
----
-
-## 6. Exploitation Cloud (AWS)
-
-### Architecture cible
-* **Compute** : Instance EC2 (t3.micro) ou AWS Fargate pour le script de migration.
-* **Database** : Amazon DocumentDB (compatible MongoDB).
-
-### Stratégie opérationnelle
-| Pilier | Solution AWS |
-| :--- | :--- |
-| **Coûts** | Monitoring via AWS Budgets. Estimation < 15$/mois (Hors Free Tier). |
-| **Sauvegardes** | Snapshots quotidiens automatisés via AWS Backup (rétention 30 jours). |
-| **Monitoring** | Alarmes CloudWatch sur l'utilisation CPU et les erreurs de logs (4xx/5xx). |
-| **Limites** | Alerte de stockage à 80% du volume EBS pour éviter les interruptions. |
-
----
