@@ -67,3 +67,21 @@ python verify_migration.py
 
 ---
 *Développé pour la Mission DataSoluTech - Avril 2026*
+
+---
+
+## 4. Structure des Documents (Schéma MongoDB)
+Suite au nettoyage des données (Priorité 5), chaque document dans la collection `patients` suit ce modèle JSON :
+
+```json
+{
+  "_id": "ObjectId",
+  "Name": "String (Nettoyé)",
+  "Age": "Integer",
+  "Gender": "String",
+  "Blood Type": "String",
+  "Medical Condition": "String"
+}
+```
+
+**Note** : Les doublons basés sur le couple (Name, Age) sont éliminés lors de la migration.
