@@ -5,117 +5,65 @@ Ce document détaille l'architecture, la sécurité et l'exploitation de la solu
 ---
 
 ## 1. Architecture de la Solution
-
-L'architecture repose sur une approche **conteneurisée** pour garantir l'isolement et la portabilité :
-
-* **Source de données** : Fichier `healthcare_dataset.csv` (stockage structuré).
-* **Moteur de base de données** : MongoDB 7.0 (NoSQL Orienté Document) choisi pour sa flexibilité de schéma et sa scalabilité horizontale (sharding).
-* **Orchestration** : Docker Compose gérant trois services :
-    1.  `mongodb` : Le serveur de base de données.
-  
-    2.  `migration-app` : Script Python (PyMongo) effectuant le processus ETL (Extract, Transform, Load).
+L'architecture repose sur une approche **conteneurisée** (Docker) pour garantir l'isolement et la portabilité :
+* **Source** : Fichier `healthcare_dataset.csv`.
+* **Base de données** : MongoDB 7.0 (NoSQL Orienté Document).
+* **Application** : Script Python 3.11 utilisant PyMongo et Pandas.
 
 ---
 
-## 2. Sécurité et Conformité
-
-Pour protéger les données de santé sensibles, les choix suivants ont été implémentés :
-
-* **Authentification forte** : Accès à la base de données protégé par login/password via variables d'environnement.
-* **Isolation réseau** : Le serveur MongoDB reste confiné dans le réseau interne Docker. Seul le service migration-app interagit avec lui, limitant ainsi la surface d'exposition aux attaques externes.
-* **Gestion des droits** : Création d'un utilisateur "Evaluateur" avec des droits `readWrite` limités à la base `healthcare_db`.
-* **Validation des données** : Le script de migration vérifie la cohérence des types (dates, entiers) pour éviter l'injection de données corrompues.
+## 2. Sécurité et Conformité (Priorité 1)
+Conformément aux exigences de sécurité pour les données de santé :
+* **Identifiants sécurisés** : Toute référence aux identifiants par défaut (`admin:admin`) a été supprimée du code source.
+* **Variables d'Environnement** : L'URI de connexion est injectée via la variable `MONGODB_URI`. 
+* **Arrêt Critique** : Le script est configuré pour s'arrêter immédiatement avec un message d'erreur explicite si les secrets de connexion sont manquants, empêchant toute faille de sécurité en production.
 
 ---
 
-## 3. Performance et Scalabilité
-
-La solution a été optimisée pour traiter de gros volumes de données :
-
-* **Insertion par lots (Bulk Inserts)** : Utilisation de `insert_many` avec un `chunk_size` de 5000 documents. Cela réduit les appels réseau et divise le temps de migration par 10 par rapport à une insertion ligne par ligne.
-* **Indexation** : Création d'index sur les champs fréquemment requêtés (`Name`, `Doctor`, `Hospital`) pour garantir des recherches en temps constant ($O(1)$ ou $O(\log n)$).
-* **Gestion de la mémoire** : Utilisation de générateurs Python pour ne pas charger l'intégralité du CSV de 55 500 lignes en RAM.
+## 3. Qualité et Nettoyage des Données (Priorité 5)
+Le script de migration n'est pas un simple transfert ; il effectue un nettoyage automatique :
+* **Suppression des doublons** : Identification et suppression des entrées dupliquées (basé sur le nom et l'âge).
+* **Sélection de colonnes** : Seules les données médicales pertinentes sont migrées (`Name`, `Age`, `Gender`, `Blood Type`, `Medical Condition`).
+* **Normalisation** : Nettoyage des espaces blancs dans les noms pour garantir l'intégrité des recherches.
 
 ---
 
-## 4. Stratégie de Sauvegarde et Restauration (Backup/Restore)
-
-Pour assurer la continuité de service (PRA) :
-
-* **Sauvegarde (Dump)** :
-    ```bash
-    docker exec mongodb mongodump --db healthcare_db --out /data/backup/
-    ```
-* **Restauration (Restore)** :
-    ```bash
-    docker exec mongodb mongorestore --db healthcare_db /data/backup/healthcare_db
-    ```
+## 4. Dépendances et Docker (Priorités 2 & 3)
+* **Versions Figées** : Les bibliothèques (`pandas`, `pymongo`, `python-dotenv`) sont verrouillées dans le fichier `requirements.txt` pour éviter toute rupture de compatibilité.
+* **Dockerfile Optimisé** : L'image Docker utilise désormais le fichier de dépendances pour une installation automatisée et reproductible.
 
 ---
 
 ## 5. Déploiement et Exploitation
 
-### Déploiement local
+### Configuration
+Créez un fichier `.env` à la racine :
+```text
+MONGODB_URI=mongodb://votre_user:votre_password@mongodb:27017/
+```
+
+### Lancement
 ```bash
 docker compose up -d --build
 ```
-### Surveillance (Monitoring)
-Pour vérifier l'état de santé du service et les ressources consommées :
+
+### Vérification
 ```bash
-docker ps
-docker stats
+# Vérifier les logs du nettoyage et de la migration
 docker logs -f migration-app
+# Lancer le script de vérification d'intégrité
+python verify_migration.py
 ```
+
 ---
 
 ## 6. Tests et Preuves de fonctionnement
-
-Pour garantir la fiabilité de la migration, une batterie de tests a été réalisée :
-
-### 6.1 Tableau des tests
-
 | Test | Objectif | Résultat |
 | :--- | :--- | :--- |
-| **Intégrité numérique** | Vérifier que les 55 500 documents sont bien importés. | **Réussi** |
-| **Validation des types** | S'assurer que les dates sont des objets `Date` (ISODate). | **Réussi** |
-| **Isolation réseau** | Vérifier que MongoDB n'est pas accessible hors du réseau Docker. | **Réussi** |
-| **Performance** | Mesurer le temps d'insertion avec la méthode `insert_many`. | **Réussi (< 30s)** |
+| **Sécurité Fallback** | Vérifier l'arrêt du script sans variable d'env. | **Réussi (Error Code 1)** |
+| **Doublons** | S'assurer de l'unicité des patients. | **Réussi** |
+| **Intégrité** | Comparer le nombre d'entrées CSV vs MongoDB. | **Réussi** |
+| **Performance** | Temps d'insertion via Bulk Insert. | **Réussi (< 30s)** |
 
-
-### 6.2 Preuves visuelles (Logs)
-
-La réussite est confirmée par la sortie console du script :
-```text
-
-[INFO] Connexion à MongoDB réussie.
-[INFO] Chargement du dataset : 55 500 lignes détectées.
-[INFO] Migration terminée avec succès en 24.5 secondes.
-[INFO] Indexation terminée sur les champs : Name, Doctor, Hospital.
-```
 ---
-## 7. Optimisations et Performance
-
-Pour répondre aux exigences de la **Mission DataSoluTech**, les choix techniques suivants ont été implémentés :
-
-* **Traitement des données avec Pandas** : Utilisation de la bibliothèque `pandas` pour charger et préparer efficacement le dataset de 55 500 lignes.
-* **Indexation stratégique** : Des index ont été créés sur les champs de recherche fréquents (`Name`, `Doctor`) pour assurer une réponse rapide des requêtes, même en cas d'augmentation du volume de données.
-* **Automatisation via Docker** : L'utilisation de conteneurs permet de garantir des performances constantes quel que soit l'environnement de déploiement.
----
-
-## **8. Stratégie de Maintenance et Sauvegarde (Backup)**
-
-Pour garantir la pérennité et la sécurité des données médicales, une procédure de maintenance a été définie :
-
-**1. Sauvegarde à chaud (Backup) :**
-```bash
-docker exec mongodb mongodump --db healthcare_db --out /data/backup/
-```
-
-**2. Restauration des données (Restore) :**
-
-```bash
-docker exec mongodb mongorestore --db healthcare_db /data/backup/healthcare_db
-```
-
-**3. Mises à jour :**
-Les dépendances logicielles sont centralisées dans le fichier `requirements.txt` et l'infrastructure est basée sur une image **Docker** stable (`MongoDB 7.0`) pour faciliter les montées de version et garantir la reproductibilité de l'environnement.
+*Développé pour la Mission DataSoluTech - Avril 2026*
