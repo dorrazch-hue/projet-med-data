@@ -63,3 +63,21 @@ Chaque patient est stocké selon le modèle suivant :
 
 ---
 *Dossier Technique - Dorra - 2026*
+
+---
+
+## 6. Exploitation Cloud (AWS)
+
+### Architecture cible
+* **Compute** : Instance EC2 (t3.micro) ou AWS Fargate pour le script de migration.
+* **Database** : Amazon DocumentDB (compatible MongoDB).
+
+### Stratégie opérationnelle
+| Pilier | Solution AWS |
+| :--- | :--- |
+| **Coûts** | Monitoring via AWS Budgets. Estimation < 15$/mois (Hors Free Tier). |
+| **Sauvegardes** | Snapshots quotidiens automatisés via AWS Backup (rétention 30 jours). |
+| **Monitoring** | Alarmes CloudWatch sur l'utilisation CPU et les erreurs de logs (4xx/5xx). |
+| **Limites** | Alerte de stockage à 80% du volume EBS pour éviter les interruptions. |
+
+---
