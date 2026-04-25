@@ -1,13 +1,13 @@
 import pandas as pd
 import os
 import sys
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 from dotenv import load_dotenv
 
 load_dotenv()
 
 def migrate_data():
-    print("--- 🚀 MIGRATION OPTIMISÉE PAR BATCHS (CHUNKS) ---")
+    print("--- 🚀 MIGRATION AVEC VÉRIFICATION DES INDEX ---")
     
     uri = os.getenv("MONGODB_URI")
     if not uri:
@@ -18,30 +18,29 @@ def migrate_data():
         client = MongoClient(uri, serverSelectionTimeoutMS=5000)
         db = client.get_database()
         collection = db['patients']
-        collection.delete_many({}) # Nettoyage initial
 
+        # 1. PRÉPARATION & NETTOYAGE
         cols = ['Name', 'Age', 'Gender', 'Blood Type', 'Medical Condition']
+        df = pd.read_csv('healthcare_dataset.csv', usecols=cols)
+        df['Name'] = df['Name'].astype(str).str.strip()
+        df = df.drop_duplicates(subset=['Name', 'Age'])
+
+        # 2. INSERTION
+        payload = df.to_dict('records')
+        collection.delete_many({}) 
+        collection.insert_many(payload)
+        print(f"🚀 {len(df)} documents insérés.")
+
+        # 3. GESTION DES INDEX (Étape 8)
+        print("🔍 Vérification des index...")
+        # Création d'un index ascendant sur le champ 'Name'
+        collection.create_index([("Name", ASCENDING)])
         
-        # Utilisation de chunksize pour la performance mémoire (Étape 6)
-        chunk_size = 5000
-        reader = pd.read_csv('healthcare_dataset.csv', usecols=cols, chunksize=chunk_size)
-
-        total_inserted = 0
-        for i, chunk in enumerate(reader):
-            # Nettoyage par chunk
-            chunk['Name'] = chunk['Name'].astype(str).str.strip()
-            chunk['Age'] = pd.to_numeric(chunk['Age'], errors='coerce').fillna(0).astype(int)
-            chunk = chunk.fillna("Unknown")
-            chunk = chunk.drop_duplicates(subset=['Name', 'Age'])
-
-            # Insertion
-            if not chunk.empty:
-                payload = chunk.to_dict('records')
-                collection.insert_many(payload)
-                total_inserted += len(chunk)
-                print(f"📦 Chunk {i+1} traité : {len(chunk)} documents insérés.")
-
-        print(f"✅ Migration terminée ! Total : {total_inserted} documents en base.")
+        # Affichage des index pour preuve
+        indexes = collection.list_indexes()
+        print("✅ Index actifs sur la collection :")
+        for idx in indexes:
+            print(f" - {idx['name']}")
 
     except Exception as e:
         print(f"❌ Erreur : {e}")
