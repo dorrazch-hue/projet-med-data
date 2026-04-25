@@ -60,3 +60,19 @@ Le projet est conçu pour être deploye sur Amazon Web Services :
 
 ---
 *Dossier Technique - Dorra - 2026*
+
+## 📊 Preuves d'exécution (Livrable 10)
+
+La migration a été testée et validée avec succès sur l'environnement local. Voici un extrait du rapport d'intégrité généré par le script `verify_migration.py` :
+
+```text
+--- 🔍 RAPPORT D'INTÉGRITÉ POST-MIGRATION ---
+✅ Documents en base : 54966
+✅ Index détectés : _id_, Name_1, Medical_Condition_1
+✅ Analyse d'un document type (Validation des types) :
+ - Name: str
+ - Age: int
+ - Medical Condition: str
+```
+
+> **Note :** Le détail complet de l'exécution est disponible dans le fichier [logs_final.txt](./logs_final.txt).
