@@ -1,50 +1,44 @@
 import pandas as pd
 import os
 import time
+import sys
 from pymongo import MongoClient
 
 try:
-    print("--- Début de la migration robuste et performante ---")
+    print("--- Début de la migration sécurisée ---")
     
-    # 1. Connexion sécurisée
-    uri = os.getenv("MONGODB_URI", "mongodb://admin:admin@mongodb:27017/")
+    # SÉCURITÉ : Pas de fallback admin:admin
+    uri = os.getenv("MONGODB_URI")
+    
+    if not uri:
+        print("❌ ERREUR CRITIQUE : La variable d'environnement MONGODB_URI est manquante.")
+        sys.exit(1)
+
     client = MongoClient(uri, serverSelectionTimeoutMS=5000)
     
-    # --- ROBUSTESSE : Attente de disponibilité de la base ---
-    print("Vérification de la disponibilité de MongoDB...")
-    for i in range(10):
+    # Attente de disponibilité
+    for i in range(5):
         try:
             client.admin.command('ping')
             print("✅ MongoDB est prêt !")
             break
-        except Exception:
-            print(f"⏳ MongoDB n'est pas encore prêt ({i+1}/10)... attente de 3s")
+        except:
+            print(f"⏳ Attente MongoDB ({i+1}/5)...")
             time.sleep(3)
-    else:
-        raise Exception("Impossible de se connecter à MongoDB après 30 secondes.")
 
     db = client.get_database()
     collection = db['patients']
     
-    # 2. FIABILISATION : Idempotence (on évite les doublons)
-    print("Nettoyage des anciennes données...")
+    # Nettoyage pour éviter les doublons
     collection.delete_many({}) 
 
-    # --- PERFORMANCE : Création des Index ---
-    print("Optimisation des performances (création des index)...")
-    collection.create_index([("Name", 1)])              # Recherche par nom
-    collection.create_index([("Medical Condition", 1)]) # Statistiques par maladie
-    collection.create_index([("Hospital", 1)])          # Filtres par hôpital
-    print("✅ Index créés avec succès.")
-
-    # 3. Migration des données
-    print("Lecture du fichier CSV...")
+    # Migration
     df = pd.read_csv('healthcare_dataset.csv')
-    
-    print(f"Insertion de {len(df)} lignes en cours...")
+    print(f"Insertion de {len(df)} lignes...")
     collection.insert_many(df.to_dict(orient='records'))
     
-    print("--- MIGRATION RÉUSSIE, SÉCURISÉE ET OPTIMISÉE ! ---")
+    print("--- MIGRATION RÉUSSIE ---")
     
 except Exception as e:
-    print(f"❌ ERREUR CRITIQUE : {e}")
+    print(f"❌ ERREUR : {e}")
+    sys.exit(1)
