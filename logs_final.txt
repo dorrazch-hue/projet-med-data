@@ -1,0 +1,29 @@
+python3 verify_migration.py
+
+--- 🔍 RAPPORT D'INTÉGRITÉ POST-MIGRATION ---
+
+✅ Documents en base : 54966
+
+
+
+✅ Index détectés :
+
+ - _id_
+
+ - Name_1
+
+
+
+✅ Analyse d'un document type (Validation des types) :
+
+ - _id: ObjectId (Valeur: 69ecf31b286b463f464031b4)
+
+ - Name: str (Valeur: Bobby JacksOn)
+
+ - Age: int (Valeur: 30)
+
+ - Gender: str (Valeur: Male)
+
+ - Blood Type: str (Valeur: B-)
+
+ - Medical Condition: str (Valeur: Cancer)
