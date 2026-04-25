@@ -1,53 +1,42 @@
 import pandas as pd
 import os
-import time
 import sys
 from pymongo import MongoClient
+from dotenv import load_dotenv
 
-try:
-    print("--- 🧹 DÉBUT DE LA MIGRATION AVEC NETTOYAGE DES DONNÉES ---")
-    
-    # SÉCURITÉ
+load_dotenv()
+
+def migrate_data():
     uri = os.getenv("MONGODB_URI")
     if not uri:
         print("❌ ERREUR : MONGODB_URI manquante.")
         sys.exit(1)
 
-    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
-    db = client.get_database()
-    collection = db['patients']
+    try:
+        client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+        db = client.get_database()
+        collection = db['patients']
 
-    # 1. CHARGEMENT
-    print("Chargement du fichier CSV...")
-    df = pd.read_csv('healthcare_dataset.csv')
-    initial_count = len(df)
+        # CONTRÔLE ÉTAPE 5
+        cols = ['Name', 'Age', 'Gender', 'Blood Type', 'Medical Condition']
+        df = pd.read_csv('healthcare_dataset.csv', usecols=cols)
+        
+        df['Name'] = df['Name'].astype(str).str.strip()
+        df['Age'] = pd.to_numeric(df['Age'], errors='coerce').fillna(0).astype(int)
+        df = df.fillna("Unknown")
 
-    # 2. NETTOYAGE (Priorité 5)
-    print("Nettoyage en cours...")
-    
-    # Suppression des doublons basés sur le nom et l'âge
-    df = df.drop_duplicates(subset=['Name', 'Age'])
-    
-    # Sélection des colonnes pertinentes
-    colonnes_utiles = ['Name', 'Age', 'Gender', 'Blood Type', 'Medical Condition']
-    df = df[colonnes_utiles]
-    
-    # Nettoyage des chaînes de caractères (espaces en trop)
-    df['Name'] = df['Name'].str.strip()
-    
-    final_count = len(df)
-    print(f"✅ {initial_count - final_count} doublons supprimés.")
-    print(f"✅ Colonnes conservées : {colonnes_utiles}")
+        initial_count = len(df)
+        df = df.drop_duplicates(subset=['Name', 'Age'])
+        
+        print(f"✅ Nettoyage : {initial_count - len(df)} doublons supprimés.")
 
-    # 3. MIGRATION
-    print("Nettoyage de la base de données...")
-    collection.delete_many({}) 
+        payload = df.to_dict('records')
+        collection.delete_many({}) 
+        collection.insert_many(payload)
+        print(f"🚀 Migration réussie : {len(df)} documents insérés.")
 
-    print(f"Insertion de {final_count} documents nettoyés...")
-    collection.insert_many(df.to_dict(orient='records'))
-    
-    print("--- 🏆 MIGRATION RÉUSSIE ET DONNÉES PROPRES ---")
-    
-except Exception as e:
-    print(f"❌ ERREUR : {e}")
-    sys.exit(1)
+    except Exception as e:
+        print(f"❌ Erreur : {e}")
+
+if __name__ == "__main__":
+    migrate_data()
