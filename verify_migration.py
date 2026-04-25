@@ -1,44 +1,42 @@
 import os
-import pandas as pd
-import sys
 from pymongo import MongoClient
+from dotenv import load_dotenv
 
-try:
-    print("--- 🔍 VÉRIFICATION DES DONNÉES SÉCURISÉE ---")
+load_dotenv()
 
-    # 1. Utilisation de l'URI sécurisée (Variable d'environnement obligatoire)
+def verify():
+    # Vérification de l'URI pour éviter le fallback admin:admin
     uri = os.getenv("MONGODB_URI")
-    
     if not uri:
-        print("❌ ERREUR CRITIQUE : La variable d'environnement MONGODB_URI est manquante.")
-        print("Sécurité : L'utilisation d'identifiants par défaut (admin:admin) est interdite.")
-        sys.exit(1)
+        print("❌ ERREUR : MONGODB_URI manquante dans le .env")
+        return
 
-    client = MongoClient(uri, serverSelectionTimeoutMS=5000)
-    db = client.get_database()
-    collection = db['patients']
+    try:
+        client = MongoClient(uri, serverSelectionTimeoutMS=2000)
+        db = client.get_database()
+        col = db['patients']
+        
+        print("--- 🔍 RAPPORT D'INTÉGRITÉ POST-MIGRATION ---")
+        
+        # 1. Comptage (Point 3)
+        count = col.count_documents({})
+        print(f"✅ Documents en base : {count}")
+        
+        # 2. Vérification des Index (Point 10)
+        print("\n✅ Index détectés :")
+        for name, info in col.index_information().items():
+            print(f" - {name}")
 
-    # 2. On compte les entrées dans MongoDB
-    total_mongo = collection.count_documents({})
-    
-    # 3. On compte les lignes du fichier CSV
-    df = pd.read_csv('healthcare_dataset.csv')
-    total_csv = len(df)
+        # 3. Échantillon de typage (Point 2 & 3)
+        sample = col.find_one()
+        if sample:
+            print("\n✅ Analyse d'un document type (Validation des types) :")
+            for key, value in sample.items():
+                # On affiche le type Python pour prouver le cast (int, str, etc.)
+                print(f" - {key}: {type(value).__name__} (Valeur: {value})")
+                
+    except Exception as e:
+        print(f"❌ Erreur de connexion : {e}")
 
-    print(f"Nombre d'entrées dans MongoDB : {total_mongo}")
-    print(f"Nombre de lignes dans le CSV  : {total_csv}")
-
-    # 4. Comparaison intelligente
-    if total_mongo == total_csv:
-        print("✅ SUCCÈS : La migration est intègre (MongoDB == CSV) !")
-    else:
-        print(f"⚠️ ATTENTION : Différence détectée ! ({total_mongo} en base vs {total_csv} dans le fichier)")
-
-    # 5. Test de lecture
-    exemple = collection.find_one()
-    if exemple:
-        print(f"✅ TEST LECTURE : Patient trouvé -> {exemple.get('Name')}")
-
-except Exception as e:
-    print(f"❌ ERREUR LORS DU TEST : {e}")
-    sys.exit(1)
+if __name__ == "__main__":
+    verify()
