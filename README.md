@@ -133,12 +133,46 @@ python3 -m pytest test_migration.py -v -m integration
 
 ## 8. Déploiement AWS
 
-- **Amazon DocumentDB** : Cluster NoSQL géré, compatible MongoDB
-- **AWS Fargate** : Exécution Serverless du script de migration
-- **Amazon S3** : Stockage CSV avec archivage Glacier après 30 jours
+### Comparaison des options de base de données
+
+| Service | Compatibilité MongoDB | Gestion | Coût | Recommandation |
+| :--- | :--- | :--- | :--- | :--- |
+| **Amazon DocumentDB** | Partielle (API MongoDB) | Fully managed | ~57 USD/mois | ✅ Recommandé production |
+| **MongoDB Atlas sur AWS** | Totale (natif) | Fully managed | ~57 USD/mois | ✅ Recommandé si full MongoDB |
+| **MongoDB sur EC2** | Totale | Manuel | ~30 USD/mois | ⚠️ Complexité opérationnelle |
+| **MongoDB sur ECS/Fargate** | Totale | Semi-managed | ~25 USD/mois | ✅ Recommandé pour ce projet |
+
+### Justification des choix
+
+**Amazon DocumentDB** est recommandé pour la production car il offre une haute disponibilité multi-AZ automatique, des sauvegardes automatisées et une conformité aux standards de sécurité des données de santé (HIPAA). En revanche, sa compatibilité MongoDB est partielle — certaines commandes avancées ne sont pas supportées.
+
+**AWS Fargate** est recommandé pour exécuter le script de migration car il élimine la gestion de serveurs EC2, facture uniquement à l'usage, et s'intègre naturellement avec Docker Compose.
+
+**Amazon S3** est utilisé pour le stockage des CSV sources avec une politique de cycle de vie : archivage automatique vers Glacier après 30 jours pour réduire les coûts.
+
+### Sécurité
+
 - **AWS KMS** : Chiffrement AES-256 au repos, TLS 1.2 en transit
-- **AWS CloudWatch** : Surveillance CPU/RAM et logs
-- **Estimation** : ~15 USD/mois pour une instance `t4g.medium`
+- **VPC Isolation** : Base de données en sous-réseau privé, sans accès Internet direct
+- **AWS Backup** : Politique de sauvegarde avec rétention 30 jours
+- **IAM Roles** : Principe du moindre privilège — Fargate accède à S3 et DocumentDB sans credentials codés en dur
+
+### Monitoring
+
+- **AWS CloudWatch** : Surveillance CPU/RAM, agrégation des logs, alertes automatiques
+- **AWS X-Ray** : Analyse des temps d'insertion par batch pour détecter les goulots d'étranglement
+
+### Estimation des Coûts (FinOps)
+
+| Ressource | Coût estimé/mois |
+| :--- | :--- |
+| Amazon DocumentDB (db.t3.medium) | ~57 USD |
+| AWS Fargate (migration ponctuelle) | ~2 USD |
+| Amazon S3 (stockage CSV) | ~1 USD |
+| AWS CloudWatch | ~3 USD |
+| **Total estimé** | **~63 USD/mois** |
+
+Optimisation : utilisation d'instances Spot pour le traitement batch (-70% sur Fargate) et alertes de budget AWS pour éviter les dépassements.
 
 ---
 
@@ -162,4 +196,4 @@ python3 -m pytest test_migration.py -v
 ```
 
 ---
-*Dossier Technique — Dorra — 2026*
+*Dossier Technique — Dorra — 2026
