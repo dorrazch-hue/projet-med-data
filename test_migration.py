@@ -96,5 +96,64 @@ class TestIntegration:
         col = self.get_collection()
         assert col.count_documents({}) > 0
 
+    def test_nombre_documents_attendu(self):
+        col = self.get_collection()
+        total = col.count_documents({})
+        assert total == 54966, f"Attendu 54966, trouvé {total}"
+
     def test_structure_document(self):
-        col = self
+        col = self.get_collection()
+        doc = col.find_one()
+        assert doc is not None
+        for bloc in ["personal_info", "medical_info", "admission_info",
+                     "administrative_info", "metadata"]:
+            assert bloc in doc, f"Bloc manquant : {bloc}"
+
+    def test_types_en_base(self):
+        col = self.get_collection()
+        doc = col.find_one()
+        assert isinstance(doc["personal_info"]["age"], int)
+        assert isinstance(doc["admission_info"]["admission_date"], datetime)
+        assert isinstance(doc["admission_info"]["room_number"], int)
+        assert isinstance(doc["administrative_info"]["billing_amount"], float)
+
+    def test_index_presents(self):
+        col = self.get_collection()
+        indexes = set(col.index_information().keys())
+        expected = {
+            "_id_", "idx_name", "idx_condition", "idx_hospital",
+            "idx_doctor", "idx_admission_date", "idx_hospital_date",
+        }
+        assert expected.issubset(indexes), f"Index manquants : {expected - indexes}"
+
+    def test_absence_doublons(self):
+        col = self.get_collection()
+        pipeline = [
+            {"$group": {
+                "_id": {
+                    "name":     "$personal_info.name",
+                    "age":      "$personal_info.age",
+                    "doctor":   "$admission_info.doctor",
+                    "hospital": "$admission_info.hospital",
+                    "date":     "$admission_info.admission_date",
+                },
+                "count": {"$sum": 1},
+            }},
+            {"$match": {"count": {"$gt": 1}}},
+        ]
+        duplicates = list(col.aggregate(pipeline))
+        assert len(duplicates) == 0, f"{len(duplicates)} doublon(s) trouvé(s)"
+
+    def test_validation_types_sur_tous_les_docs(self):
+        col = self.get_collection()
+        type_errors = 0
+        for doc in col.find({}, {"personal_info": 1, "admission_info": 1}):
+            pi = doc.get("personal_info", {})
+            ai = doc.get("admission_info", {})
+            if not isinstance(pi.get("age"), int):
+                type_errors += 1
+            if not isinstance(ai.get("room_number"), int):
+                type_errors += 1
+            if not isinstance(ai.get("admission_date"), datetime):
+                type_errors += 1
+        assert type_errors == 0, f"{type_errors} erreur(s) de type détectée(s)"

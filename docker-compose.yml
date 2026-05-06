@@ -33,6 +33,8 @@ services:
       - ./healthcare_dataset.csv:/app/healthcare_dataset.csv
     environment:
       DATABASE_NAME:        ${DATABASE_NAME}
+      MONGO_ROOT_USER:      ${MONGO_ROOT_USER}
+      MONGO_ROOT_PASSWORD:  ${MONGO_ROOT_PASSWORD}
       MONGO_APP_USER:       ${MONGO_APP_USER}
       MONGO_APP_PASSWORD:   ${MONGO_APP_PASSWORD}
       MONGO_AUDIT_USER:     ${MONGO_AUDIT_USER}

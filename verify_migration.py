@@ -17,6 +17,8 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+EXPECTED_DOCS = 54966
+
 EXPECTED_BLOCKS = [
     "personal_info", "medical_info", "admission_info",
     "administrative_info", "metadata",
@@ -60,7 +62,10 @@ def verify():
 
     # 1. Nombre de documents
     total = col.count_documents({})
-    log.info(f"Documents en base                   : {total}")
+    if total == EXPECTED_DOCS:
+        log.info(f"Documents en base                   : {total} ✅")
+    else:
+        log.warning(f"Documents en base                   : {total} ⚠️ (attendu {EXPECTED_DOCS})")
 
     # 2. Doublons résiduels
     duplicates = list(col.aggregate(DEDUP_PIPELINE))
@@ -79,10 +84,9 @@ def verify():
     if missing_blocks == 0:
         log.info("Blocs imbriqués                     : tous présents ✅")
 
-    # 4. Types attendus (500 docs)
+    # 4. Types attendus sur TOUS les documents
     type_errors = 0
-    sample = list(col.find({}, {"personal_info": 1, "admission_info": 1}).limit(500))
-    for doc in sample:
+    for doc in col.find({}, {"personal_info": 1, "admission_info": 1}):
         pi = doc.get("personal_info", {})
         ai = doc.get("admission_info", {})
         if not isinstance(pi.get("age"), int):
@@ -95,7 +99,7 @@ def verify():
             type_errors += 1
 
     if type_errors == 0:
-        log.info("Validation des types (500 docs)     : OK ✅")
+        log.info("Validation des types (tous les docs) : OK ✅")
     else:
         log.warning(f"Erreurs de type détectées           : {type_errors}")
 
