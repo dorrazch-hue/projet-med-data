@@ -1,26 +1,26 @@
-2026-05-07 19:24:26,347 [INFO] =======================================================
-2026-05-07 19:24:26,347 [INFO]    DÉMARRAGE DU PIPELINE DE MIGRATION MONGODB
-2026-05-07 19:24:26,347 [INFO] =======================================================
-2026-05-07 19:24:26,526 [INFO] Lignes lues depuis le CSV : 55500
-2026-05-07 19:24:26,542 [INFO] Doublons détectés et supprimés : 534
-2026-05-07 19:24:27,697 [INFO] Chunk inséré : 5000 documents (total : 5000)
-2026-05-07 19:24:28,832 [INFO] Chunk inséré : 5000 documents (total : 10000)
-2026-05-07 19:24:29,982 [INFO] Chunk inséré : 5000 documents (total : 15000)
-2026-05-07 19:24:31,089 [INFO] Chunk inséré : 5000 documents (total : 20000)
-2026-05-07 19:24:32,167 [INFO] Chunk inséré : 5000 documents (total : 25000)
-2026-05-07 19:24:33,380 [INFO] Chunk inséré : 5000 documents (total : 30000)
-2026-05-07 19:24:34,460 [INFO] Chunk inséré : 5000 documents (total : 35000)
-2026-05-07 19:24:35,597 [INFO] Chunk inséré : 5000 documents (total : 40000)
-2026-05-07 19:24:36,737 [INFO] Chunk inséré : 5000 documents (total : 45000)
-2026-05-07 19:24:37,833 [INFO] Chunk inséré : 5000 documents (total : 50000)
-2026-05-07 19:24:38,924 [INFO] Chunk inséré : 4966 documents (total : 54966)
-2026-05-07 19:24:38,924 [INFO] Création des index...
-2026-05-07 19:24:39,274 [INFO] Index créés avec succès.
-2026-05-07 19:24:39,274 [INFO] =======================================================
-2026-05-07 19:24:39,274 [INFO]    RAPPORT FINAL DE MIGRATION
-2026-05-07 19:24:39,274 [INFO] =======================================================
-2026-05-07 19:24:39,274 [INFO] Lignes source (CSV) : 55500
-2026-05-07 19:24:39,274 [INFO] Doublons détectés : 534
-2026-05-07 19:24:39,274 [INFO] Lignes invalides rejetées : 0
-2026-05-07 19:24:39,274 [INFO] Documents migrés en base : 54966
-2026-05-07 19:24:39,274 [INFO] =======================================================
+2026-05-07 19:46:10,584 [INFO] =======================================================
+2026-05-07 19:46:10,584 [INFO]    DÉMARRAGE DU PIPELINE DE MIGRATION MONGODB
+2026-05-07 19:46:10,584 [INFO] =======================================================
+2026-05-07 19:46:10,702 [INFO] Lignes lues depuis le CSV : 55500
+2026-05-07 19:46:10,717 [INFO] Doublons détectés et supprimés : 534
+2026-05-07 19:46:11,803 [INFO] Chunk inséré : 5000 documents (total : 5000)
+2026-05-07 19:46:12,900 [INFO] Chunk inséré : 5000 documents (total : 10000)
+2026-05-07 19:46:13,969 [INFO] Chunk inséré : 5000 documents (total : 15000)
+2026-05-07 19:46:15,107 [INFO] Chunk inséré : 5000 documents (total : 20000)
+2026-05-07 19:46:16,174 [INFO] Chunk inséré : 5000 documents (total : 25000)
+2026-05-07 19:46:17,269 [INFO] Chunk inséré : 5000 documents (total : 30000)
+2026-05-07 19:46:18,349 [INFO] Chunk inséré : 5000 documents (total : 35000)
+2026-05-07 19:46:19,432 [INFO] Chunk inséré : 5000 documents (total : 40000)
+2026-05-07 19:46:20,608 [INFO] Chunk inséré : 5000 documents (total : 45000)
+2026-05-07 19:46:21,702 [INFO] Chunk inséré : 5000 documents (total : 50000)
+2026-05-07 19:46:22,784 [INFO] Chunk inséré : 4966 documents (total : 54966)
+2026-05-07 19:46:22,784 [INFO] Création des index...
+2026-05-07 19:46:23,142 [INFO] Index créés avec succès.
+2026-05-07 19:46:23,142 [INFO] =======================================================
+2026-05-07 19:46:23,142 [INFO]    RAPPORT FINAL DE MIGRATION
+2026-05-07 19:46:23,142 [INFO] =======================================================
+2026-05-07 19:46:23,142 [INFO] Lignes source (CSV) : 55500
+2026-05-07 19:46:23,142 [INFO] Doublons détectés : 534
+2026-05-07 19:46:23,142 [INFO] Lignes invalides rejetées : 0
+2026-05-07 19:46:23,142 [INFO] Documents migrés en base : 54966
+2026-05-07 19:46:23,142 [INFO] =======================================================
